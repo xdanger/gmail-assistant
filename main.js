@@ -1,13 +1,10 @@
-function listAllYourLabels() {
-  var labels = GmailApp.getUserLabels();
-  for (var i = 0; i < labels.length; i++) {
-    Logger.log("label: " + labels[i].getName());
-  }
-}
-
 function main() {
   const props = PropertiesService.getScriptProperties();
-  let last_processed_timestamp = props.getProperty("LastProcessedMessage_TS");
+  const ASSISTANT_ID = props.getProperty('OPENAI_ASSISTANT_ID');
+  if (!ASSISTANT_ID) {
+    throw new ReferenceError("`OPENAI_ASSISTANT_ID` is not found in ScriptProperties.");
+  }
+  let last_processed_timestamp = props.getProperty('LastProcessedMessage_TS');
   if (last_processed_timestamp === null) {
     throw new ReferenceError("`LastProcessedMessage_TS` is not found in ScriptProperties.");
   }
@@ -30,7 +27,7 @@ function main() {
       `\nSubject: ${last_message.getSubject()}` +
       `\n------------------------\n` +
       last_message.getPlainBody();
-    let answ = JSON.parse(askOpenAIAssistant(content, props.getProperty("OpenAIAssistantID")));
+    let answ = JSON.parse(askOpenAIAssistant(content, ASSISTANT_ID));
 
     console.log(`${last_message.getSubject()}\n${JSON.stringify(answ)}`);
     const cate = answ.category;
