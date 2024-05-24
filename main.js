@@ -10,6 +10,7 @@ function main() {
   }
   let threads = GmailApp.getInboxThreads()
     .filter((t) => t.getLastMessageDate().getTime() > last_processed_timestamp)
+    .filter((t) => !t.getFirstMessageSubject().includes("failures for Google Apps Script"))
     .sort(
       (t1, t2) =>
         t1.getLastMessageDate().getTime() - t2.getLastMessageDate().getTime(),
