@@ -1,16 +1,23 @@
 function main() {
   const props = PropertiesService.getScriptProperties();
-  const ASSISTANT_ID = props.getProperty('OPENAI_ASSISTANT_ID');
+  const ASSISTANT_ID = props.getProperty("OPENAI_ASSISTANT_ID");
   if (!ASSISTANT_ID) {
-    throw new ReferenceError("`OPENAI_ASSISTANT_ID` is not found in ScriptProperties.");
+    throw new ReferenceError(
+      "`OPENAI_ASSISTANT_ID` is not found in ScriptProperties.",
+    );
   }
-  let last_processed_timestamp = props.getProperty('LastProcessedMessage_TS');
+  let last_processed_timestamp = props.getProperty("LastProcessedMessage_TS");
   if (last_processed_timestamp === null) {
-    throw new ReferenceError("`LastProcessedMessage_TS` is not found in ScriptProperties.");
+    throw new ReferenceError(
+      "`LastProcessedMessage_TS` is not found in ScriptProperties.",
+    );
   }
   let threads = GmailApp.getInboxThreads()
     .filter((t) => t.getLastMessageDate().getTime() > last_processed_timestamp)
-    .filter((t) => !t.getFirstMessageSubject().includes("failures for Google Apps Script"))
+    .filter(
+      (t) =>
+        !t.getFirstMessageSubject().includes("failures for Google Apps Script"),
+    )
     .sort(
       (t1, t2) =>
         t1.getLastMessageDate().getTime() - t2.getLastMessageDate().getTime(),
@@ -27,7 +34,7 @@ function main() {
       `\nTOs: ${last_message.getTo()}` +
       `\nSubject: ${last_message.getSubject()}` +
       `\n------------------------\n` +
-      last_message.getPlainBody();
+      last_message.getPlainBody().slice(0, 200000);
     let answ = JSON.parse(askOpenAIAssistant(content, ASSISTANT_ID));
 
     console.log(`${last_message.getSubject()}\n${JSON.stringify(answ)}`);
@@ -58,7 +65,15 @@ function main() {
         break;
       default:
     }
-    if (["Receipts", "Feeds", "Notices", "Notices/OTP", "Notices/Status"].includes(cate)) {
+    if (
+      [
+        "Receipts",
+        "Feeds",
+        "Notices",
+        "Notices/OTP",
+        "Notices/Status",
+      ].includes(cate)
+    ) {
       t.addLabel(GmailApp.getUserLabelByName(cate));
     }
     if (answ.handwritten) {
