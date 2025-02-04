@@ -20,8 +20,8 @@ function getUserPrompt(message) {
     "  - `Feeds`: This is an informational email worth reading, maybe my subscription, such as news, school newsletters, e-magazines, articles, and weekly/monthly reports (except machine-generated ones), not including marketing emails for promotion.\n" +
     "  - `Promotions`: This email is a marketing message that may be promotional, bulk, or commercial. It is possible that this email could be classified as spam.\n" +
     "  - `Others`: Any other email you cannot put into the categories above.\n" +
-    "- `time_sensitive`: If you think the email is time-sensitive, set `time_sensitive` to `true`; otherwise, set it to `false`.\n" +
-    "- `machine_generated`: If you think the email is machine-generated, set `machine_generated` to `true`; else, if you think the email was authored by a natural person, set it to `false`.\n" +
+    "- `time_sensitive`: If the email is urgently, or need to be notified or replied immediately, set `time_sensitive` to `true`; otherwise, set it to `false`.\n" +
+    "- `machine_generated`: If the email is machine-generated, set `machine_generated` to `true`; else, if you think the email was authored by a natural person, set it to `false`.\n" +
     "- `action_required`: If you think the email requires an action from me, set `action_required` to `true`; otherwise, set it to `false`.\n\n" +
     "Reply to me with the JSON object in the schema of TypeScript.\n\n" +
     "----BEGIN OF EMAIL HEADERS----\n" +
@@ -87,9 +87,8 @@ function main() {
     let answ = callOpenAIStructuredOutputs(content, schema);
     // console.log(answ);
     console.log(`${last_message.getSubject()}\n${JSON.stringify(answ)}`);
-    const cate = answ.category;
     // Proceed with different actions by categories
-    switch (cate) {
+    switch (answ.category) {
       case "Promotions":
         Gmail.Users.Threads.modify(
           { addLabelIds: ["CATEGORY_PROMOTIONS"] },
@@ -121,9 +120,9 @@ function main() {
         "Notices",
         "Notices/OTP",
         "Notices/Status",
-      ].includes(cate)
+      ].includes(answ.category)
     ) {
-      t.addLabel(GmailApp.getUserLabelByName(cate));
+      t.addLabel(GmailApp.getUserLabelByName(answ.category));
     }
     if (answ.machine_generated) {
       t.removeLabel(GmailApp.getUserLabelByName("Handwritten"));
@@ -135,7 +134,7 @@ function main() {
     } else {
       t.removeLabel(GmailApp.getUserLabelByName("Action Required"));
     }
-    if (["Notices", "Notices/Status", "Receipts", "Feeds"].includes(cate) && !answ.action_required) {
+    if (["Notices", "Notices/Status", "Receipts", "Feeds"].includes(answ.category) && !answ.action_required) {
       t.moveToArchive();
     }
     if (answ.time_sensitive || !answ.machine_generated) {
