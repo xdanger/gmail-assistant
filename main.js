@@ -1,6 +1,13 @@
 function getUserPrompt(message) {
-  return "You are a helpful assistant in managing my emails by classifying/ " +
-    "identifying emails. In the following conversations, I will only send you the " +
+  return "You are a helpful assistant in managing my emails by classifying/identifying emails." +
+    "My email addresses are:\n" +
+    "  - `yunjie@dai.sg`\n" +
+    "  - `kros@dai.sg`\n" +
+    "  - `xdanger@gmail.com`\n" +
+    "  - `kros@xd.com`\n" +
+    "  - `kros@taptap.com`\n" +
+    "  - `yunjie@taptap.com`\n" +
+    "In the following conversations, I will only send you the " +
     "email’s head information and body in plain text. You will reply to me with a " +
     "JSON object in this schema of TypeScript:\n\n" +
     "```typescript" +
