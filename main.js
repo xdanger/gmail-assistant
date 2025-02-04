@@ -9,29 +9,30 @@ function getUserPrompt(message) {
     "  time_sensitive: boolean;\n" +
     "  machine_generated: boolean;\n" +
     "  handwritten: boolean;\n" +
+    "  action_required: boolean;\n" +
     "}\n" +
     "```\n\n" +
     "- `category`: You categorize my email into one of these categories:\n" +
-    "  - `Receipts`: Mostly computer-generated documents, such as paper trails, transactional receipts, bank statements (except notification of statements), and so on, should be archived for a long time.\n" +
-    "  - `Notices`: This is a computer-generated email to notify me (or my group) of an event or a time-sensitive email that is unimportant or urgent enough for me to pay much attention to, such as social media updates, security alerts, or the results of something. The email is not helpful and is supposed to be deleted after 30/60 days.\n" +
+    "  - `Receipts`: Mostly machine-generated documents, such as paper trails, transactional receipts, bank statements (except notification of statements), and so on, should be archived for a long time.\n" +
+    "  - `Notices`: This is a machine-generated email to notify me (or my group) of an event or a time-sensitive email that is unimportant or urgent enough for me to pay much attention to, such as social media updates, security alerts, or the results of something. The email is not helpful and is supposed to be deleted after 30/60 days.\n" +
     "  - `Notices/OTP`: This is a subcategory of `Notices`. Especially to verify my email address, containing several digital numbers or combined with short strings. It's time-sensitive. The email is not helpful and should be deleted after I proceed with it.\n" +
     "  - `Notices/Status`: This is a subcategory of `Notices`. Especially to inform me of the status of an online order, shipment and parcel tracking, an App in Google Play / App Store, or a website.\n" +
-    "  - `Feeds`: This is an informational email worth reading, maybe my subscription, such as news, school newsletters, e-magazines, articles, and weekly/monthly reports (except computer-generated ones), not including marketing emails for promotion.\n" +
+    "  - `Feeds`: This is an informational email worth reading, maybe my subscription, such as news, school newsletters, e-magazines, articles, and weekly/monthly reports (except machine-generated ones), not including marketing emails for promotion.\n" +
     "  - `Promotions`: This email is a marketing message that may be promotional, bulk, or commercial. It is possible that this email could be classified as spam.\n" +
     "  - `Others`: Any other email you cannot put into the categories above.\n" +
     "- `time_sensitive`: If you think the email is time-sensitive, set `time_sensitive` to `true`; otherwise, set it to `false`.\n" +
-    "- `machine_generated`: If you think the email is machine-generated, set `machine_generated` to `true`; otherwise, set it to `false`.\n" +
-    "- `handwritten`: If you think the email was authored by a natural person, set `handwritten` to `true`; otherwise, set it to `false`.\n\n" +
+    "- `machine_generated`: If you think the email is machine-generated, set `machine_generated` to `true`; else, if you think the email was authored by a natural person, set it to `false`.\n" +
+    "- `action_required`: If you think the email requires an action from me, set `action_required` to `true`; otherwise, set it to `false`.\n\n" +
     "Reply to me with the JSON object in the schema of TypeScript.\n\n" +
-    "----BEGIN OF EMAIL HEADER----\n" +
+    "----BEGIN OF EMAIL HEADERS----\n" +
     "Date: " + message.getDate() + "\n" +
     "From: " + message.getFrom() + "\n" +
     "To: " + message.getTo() + "\n" +
     "Subject: " + message.getSubject() + "\n" +
-    "----END OF EMAIL HEADER----\n" +
-    "----BEGIN OF EMAIL BODY----\n" +
+    "----END OF EMAIL HEADERS----\n" +
+    "----BEGIN OF EMAIL PLAIN BODY----\n" +
     message.getPlainBody().slice(0, 200000) + "\n" +
-    "----END OF EMAIL BODY----";
+    "----END OF EMAIL PLAIN BODY----";
 }
 
 function main() {
@@ -45,18 +46,18 @@ function main() {
       },
       time_sensitive: {
         type: "boolean",
-        description: "Whether the email is time-sensitive to be replied immediately",
+        description: "Whether the email is time-sensitive to be replied immediately.",
       },
       machine_generated: {
         type: "boolean",
-        description: "Whether the email is machine-generated",
+        description: "Whether the email is machine-generated.",
       },
-      handwritten: {
+      action_required: {
         type: "boolean",
-        description: "Whether the email was authored by a natural person",
-      }
+        description: "Whether the email requires an action from me.",
+      },
     },
-    required: ["machine_generated", "time_sensitive", "category", "handwritten"],
+    required: ["category", "machine_generated", "time_sensitive", "action_required"],
     additionalProperties: false
   };
   const props = PropertiesService.getScriptProperties();
@@ -124,15 +125,23 @@ function main() {
     ) {
       t.addLabel(GmailApp.getUserLabelByName(cate));
     }
-    if (answ.handwritten) {
-      t.addLabel(GmailApp.getUserLabelByName("Handwritten"));
-    } else {
+    if (answ.machine_generated) {
       t.removeLabel(GmailApp.getUserLabelByName("Handwritten"));
+    } else {
+      t.addLabel(GmailApp.getUserLabelByName("Handwritten"));
     }
-    if (answ.time_sensitive || answ.handwritten) {
+    if (answ.action_required) {
+      t.addLabel(GmailApp.getUserLabelByName("Action Required"));
+    } else {
+      t.removeLabel(GmailApp.getUserLabelByName("Action Required"));
+    }
+    if (["Notices", "Notices/Status", "Receipts", "Feeds"].includes(cate) && !answ.action_required) {
+      t.moveToArchive();
+    }
+    if (answ.time_sensitive || !answ.machine_generated) {
       t.moveToInbox();
     }
-    if (answ.time_sensitive && answ.handwritten) {
+    if (answ.time_sensitive && !answ.machine_generated) {
       t.markImportant();
     }
     last_processed_timestamp = t.getLastMessageDate().getTime();
