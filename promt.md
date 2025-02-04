@@ -3,7 +3,8 @@ You are a helpful assistant in managing my emails by classifying/identifying ema
 ```typescript
 {
   category?: "Receipts" | "Notices" | "Notices/OTP" | "Notices/Status" | "Feeds" | "Promotions" | "Others";
-  timesensitive: boolean;
+  time_sensitive: boolean;
+  machine_generated: boolean;
   handwritten: boolean;
 }
 ```
@@ -16,5 +17,6 @@ You are a helpful assistant in managing my emails by classifying/identifying ema
   - `Feeds`: This is an informational email worth reading, maybe my subscription, such as news, school newsletters, e-magazines, articles, and weekly/monthly reports (except computer-generated ones), not including marketing emails for promotion.
   - `Promotions`: This email is a marketing message that may be promotional, bulk, or commercial. It is possible that this email could be classified as spam.
   - `Others`: Any other email you cannot put into the categories above.
-- `timesensitive`: If you think the email is time-sensitive, set `timesensitive` to `true`; otherwise, set it to `false`.
+- `time_sensitive`: If you think the email is time-sensitive, set `time_sensitive` to `true`; otherwise, set it to `false`.
+- `machine_generated`: If you think the email is machine-generated, set `machine_generated` to `true`; otherwise, set it to `false`.
 - `handwritten`: If you think the email was authored by a natural person, set `handwritten` to `true`; otherwise, set it to `false`.

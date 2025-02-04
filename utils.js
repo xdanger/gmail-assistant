@@ -17,3 +17,34 @@ function listAllYourLabels() {
     Logger.log("label: " + labels[i].getName());
   }
 }
+
+/* OpenAI/Claude Function Call */
+const tools = [{
+  "type": "function",
+  "function": {
+    "name": "getLabels",
+    "description": "Classificate/Identify email by muti-dimension attributes",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "category": { "type": "string" },
+        "timesensitive": { "type": "boolean" },
+        "handwritten": { "type": "boolean" }
+      }
+    }
+  }
+}
+]
+
+/*
+const props = PropertiesService.getScriptProperties();
+const geminiApiKey = props.getProperty("GEMINI_API_KEY");
+const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro-latest:generateContent?key=${geminiApiKey}`;
+const model = genAI.getGenerativeModel({
+  model: "gemini-2.0-flash-thinking-exp",
+  generationConfig: {
+    responseMimeType: "application/json",
+    responseSchema: schema,
+  },
+});
+*/

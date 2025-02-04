@@ -1,31 +1,52 @@
 /**
+ * Retrieves the OpenAI API key from the user properties.
+ * If the key is not set, throws an error with instructions for the user.
+ *
+ * @return {string} The OpenAI API key.
+ * @throws {Error} If the API key is not set in the user properties.
+ */
+function getOpenAIKey() {
+  const properties = PropertiesService.getScriptProperties();
+  const token = properties.getProperty('OPENAI_API_KEY');
+
+  if (!token) {
+    // Log the error and throw an exception with clear instructions
+    Logger.log('ERROR: OpenAI API key is not set. Please register the token as the user.');
+
+    // Throw an error with step-by-step instructions for setting the key
+    throw new Error(
+      'OpenAI API key is not set.\n\n' +
+      'Please follow these steps to register the API key:\n' +
+      '1. Open the Google Apps Script Editor.\n' +
+      '2. Run the following function:\n\n' +
+      '   setOpenAIKey("YOUR_OPENAI_API_KEY");\n\n' +
+      'Note: Replace "YOUR_OPENAI_API_KEY" with the actual API key.'
+    );
+  }
+
+  // Return the API key if it is set
+  return token;
+}
+/**
  * Custom Google Sheets function to interact with OpenAI's Assistant API.
  * It creates a thread, sends the user's message, and retrieves the response in one go.
  *
  * @param {string} content The input from the user.
- * @param {string} asst_id The Assistant_ID of OpenAI Assistant API.
+ * @param {string} asst_id The assistant_id of OpenAI Assistant API.
  * @param {string(optional)} When thread_id is not specified, it creates a new thread.
  * @return {string} The response from the OpenAI Assistant.
- */
+
 function askOpenAIAssistant(content, asst_id, thread_id = null) {
-  const props = PropertiesService.getScriptProperties();
-  const OPENAI_API_KEY = props.getProperty("OPENAI_API_KEY");
-  if (!OPENAI_API_KEY) {
-    throw new ReferenceError(
-      "`OPENAI_API_KEY` is not found in Script Properties.",
-    );
-  }
+  const apiKey = getOpenAIKey(); // Throws an error if the key is not set
 
   const HEADERS = {
-    Authorization: "Bearer " + OPENAI_API_KEY,
+    Authorization: "Bearer " + apiKey,
     "Content-Type": "application/json",
     "OpenAI-Beta": "assistants=v2",
   };
 
-  const ASSISTANT_ID = asst_id;
-
-  if (!ASSISTANT_ID.startsWith("asst_")) {
-    throw new Error("Invalid `asst_id`: " + ASSISTANT_ID);
+  if (!asst_id.startsWith("asst_")) {
+    throw new Error("Invalid `asst_id`: " + asst_id);
   }
 
   let passed_thread_id = false;
@@ -74,7 +95,7 @@ function askOpenAIAssistant(content, asst_id, thread_id = null) {
       method: "post",
       headers: HEADERS,
       payload: JSON.stringify({
-        assistant_id: ASSISTANT_ID,
+        assistant_id: asst_id,
       }),
       muteHttpExceptions: true,
     },
@@ -160,5 +181,64 @@ function askOpenAIAssistant(content, asst_id, thread_id = null) {
     }
   } else {
     throw new Error("Run did not complete successfully. Status: " + status);
+  }
+}
+ */
+/**
+ * callOpenAIStructuredOutputs: Calls the OpenAI Chat Completions API with Structured Outputs enabled.
+ *
+ * @param {string} userText - The user's input text to be converted into structured JSON.
+ * @param {Object} schemaObj - The JSON Schema object describing the required output structure.
+ * @return {Array|Object} The JSON-parsed model output (most commonly an array if the schema is defined as `type="array"`).
+ * @throws {Error} If the API call fails, the model refuses (refusal), or no valid JSON is returned.
+ */
+function callOpenAIStructuredOutputs(userText, schemaObj) {
+
+  // Retrieve the OpenAI API key from the script properties
+  const apiKey = getOpenAIKey(); // Throws an error if the key is not set
+  const apiUrl = "https://api.openai.com/v1/chat/completions";
+
+  const payload = {
+    model: "o3-mini", // Adjust model as needed
+    reasoning_effort: "high",
+    messages: [
+      { role: "user", content: userText }
+    ],
+    response_format: {
+      type: "json_schema",
+      json_schema: {
+        name: "email_classification",
+        strict: true,
+        schema: schemaObj
+      }
+    }
+    // max_completion_tokens: 512
+  };
+
+  const options = {
+    method: "post",
+    contentType: "application/json",
+    payload: JSON.stringify(payload),
+    headers: {
+      Authorization: "Bearer " + apiKey
+    },
+    muteHttpExceptions: true
+  };
+
+  const response = UrlFetchApp.fetch(apiUrl, options);
+  const result = JSON.parse(response.getContentText());
+
+  if (result?.error) {
+    throw new Error("OpenAI API error: " + JSON.stringify(result.error));
+  }
+  if (result?.choices?.[0]?.message?.refusal) {
+    throw new Error("Refusal: " + result.choices[0].message.refusal);
+  }
+  const content = result.choices[0].message?.content;
+  // console.log(content.length);
+  try {
+    return JSON.parse(content);
+  } catch (e) {
+    throw new Error("Failed to parse JSON content: " + content);
   }
 }
