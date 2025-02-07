@@ -6,31 +6,7 @@ function getUserPrompt(message) {
     "  - `xdanger@gmail.com`\n" +
     "  - `kros@xd.com`\n" +
     "  - `kros@taptap.com`\n" +
-    "  - `yunjie@taptap.com`\n" +
-    "In the following conversations, I will only send you the " +
-    "email’s head information and body in plain text. You will reply to me with a " +
-    "JSON object in this schema of TypeScript:\n\n" +
-    "```typescript" +
-    "\{\n" +
-    "  category?: \"Receipts\" | \"Notices\" | \"Notices/OTP\" | \"Notices/Status\" | \"Feeds\" | \"Promotions\" | \"Others\";\n" +
-    "  time_sensitive: boolean;\n" +
-    "  machine_generated: boolean;\n" +
-    "  handwritten: boolean;\n" +
-    "  action_required: boolean;\n" +
-    "}\n" +
-    "```\n\n" +
-    "- `category`: You categorize my email into one of these categories:\n" +
-    "  - `Receipts`: Mostly machine-generated documents, such as paper trails, transactional receipts, bank statements (except notification of statements), and so on, should be archived for a long time.\n" +
-    "  - `Notices`: This is a machine-generated email to notify me (or my group) of an event or a time-sensitive email that is unimportant or urgent enough for me to pay much attention to, such as social media updates, security alerts, or the results of something. The email is not helpful and is supposed to be deleted after 30/60 days.\n" +
-    "  - `Notices/OTP`: This is a subcategory of `Notices`. Especially to verify my email address, containing several digital numbers or combined with short strings. It's time-sensitive. The email is not helpful and should be deleted after I proceed with it.\n" +
-    "  - `Notices/Status`: This is a subcategory of `Notices`. Especially to inform me of the status of an online order, shipment and parcel tracking, an App in Google Play / App Store, or a website.\n" +
-    "  - `Feeds`: This is an informational email worth reading, maybe my subscription, such as news, school newsletters, e-magazines, articles, and weekly/monthly reports (except machine-generated ones), not including marketing emails for promotion.\n" +
-    "  - `Promotions`: This email is a marketing message that may be promotional, bulk, or commercial. It is possible that this email could be classified as spam.\n" +
-    "  - `Others`: Any other email you cannot put into the categories above.\n" +
-    "- `time_sensitive`: If the email is urgently, or need to be notified or replied immediately, set `time_sensitive` to `true`; otherwise, set it to `false`.\n" +
-    "- `machine_generated`: If the email is machine-generated, set `machine_generated` to `true`; else, if you think the email was authored by a natural person, set it to `false`.\n" +
-    "- `action_required`: If you think the email requires an action from me, set `action_required` to `true`; otherwise, set it to `false`.\n\n" +
-    "Reply to me with the JSON object in the schema of TypeScript.\n\n" +
+    "  - `yunjie@taptap.com`\n\n" +
     "----BEGIN OF EMAIL HEADERS----\n" +
     "Date: " + message.getDate() + "\n" +
     "From: " + message.getFrom() + "\n" +
@@ -48,23 +24,31 @@ function main() {
     properties: {
       category: {
         type: "string",
-        description: "The category of the email",
+        description: "Categorize the email into one of these categories:\n" +
+          "  - `Receipts`: Mostly machine-generated documents, such as paper trails, transactional receipts, bank statements (except notification of statements), and so on, should be archived for a long time.\n" +
+          "  - `Notices`: This is a machine-generated email to notify me (or my group) of an event or a time-sensitive email that is unimportant or urgent enough for me to pay much attention to, such as social media updates, security alerts, or the results of something. The email is not helpful and is supposed to be deleted after 30/60 days.\n" +
+          "  - `Notices/OTP`: This is a subcategory of `Notices`. Especially to verify my email address, containing several digital numbers or combined with short strings. It's time-sensitive. The email is not helpful and should be deleted after I proceed with it.\n" +
+          "  - `Notices/Status`: This is a subcategory of `Notices`. Especially to inform me of the status of an online order, shipment and parcel tracking, an App in Google Play / App Store, or a website.\n" +
+          "  - `Feeds`: This is a periodical email worth reading, maybe my subscription, such as news, school newsletters, e-magazines, articles, and weekly/monthly reports (except that all contents are machine-generated ones), not including marketing emails for promotion.\n" +
+          "  - `Promotions`: This email is a marketing message that may be promotional, bulk, or commercial. It is possible that this email could be classified as spam.\n" +
+          "  - `Others`: Any other email you cannot put into the categories above.\n",
         enum: ["Receipts", "Notices", "Notices/OTP", "Notices/Status", "Feeds", "Promotions", "Others"]
+      },
+      generated_by: {
+        type: "string",
+        description: "Identify whether the email is generated by a machine, AI, human. Focus on the sender to determine if they are a machine or a human. Emails such as notices, periodical newsletters, transaction receipts, and bank statements should be classified as `machine`. Emails that come from a human but whose wording resembles machine-generated text should be classified as `ai`. Emails that closely mimic natural human tones should be labeled as `human`.",
+        enum: ["machine", "ai", "human"]
       },
       time_sensitive: {
         type: "boolean",
-        description: "Whether the email is time-sensitive to be replied immediately.",
-      },
-      machine_generated: {
-        type: "boolean",
-        description: "Whether the email is machine-generated.",
+        description: "The email is urgent and requires immediate notification or response, ideally within one hour.",
       },
       action_required: {
         type: "boolean",
-        description: "Whether the email requires an action from me.",
+        description: "The email requires further action from me.",
       },
     },
-    required: ["category", "machine_generated", "time_sensitive", "action_required"],
+    required: ["category", "generated_by", "time_sensitive", "action_required"],
     additionalProperties: false
   };
   const props = PropertiesService.getScriptProperties();
@@ -131,23 +115,29 @@ function main() {
     ) {
       t.addLabel(GmailApp.getUserLabelByName(answ.category));
     }
-    if (answ.machine_generated) {
-      t.removeLabel(GmailApp.getUserLabelByName("Handwritten"));
-    } else {
-      t.addLabel(GmailApp.getUserLabelByName("Handwritten"));
+    switch (answ.generated_by) {
+      case "human":
+        t.addLabel(GmailApp.getUserLabelByName("Human"));
+        break;
+      case "ai":
+        t.addLabel(GmailApp.getUserLabelByName("AI"));
+        break;
+      default:
+        t.removeLabel(GmailApp.getUserLabelByName("Human"));
+        t.removeLabel(GmailApp.getUserLabelByName("AI"));
     }
     if (answ.action_required) {
-      t.addLabel(GmailApp.getUserLabelByName("Action Required"));
+      t.addLabel(GmailApp.getUserLabelByName("TODO"));
     } else {
-      t.removeLabel(GmailApp.getUserLabelByName("Action Required"));
+      t.removeLabel(GmailApp.getUserLabelByName("TODO"));
     }
     if (["Notices", "Notices/Status", "Receipts", "Feeds"].includes(answ.category) && !answ.action_required) {
       t.moveToArchive();
     }
-    if (answ.time_sensitive || !answ.machine_generated) {
+    if (answ.time_sensitive || answ.action_required || !answ.generated_by === "machine") {
       t.moveToInbox();
     }
-    if (answ.time_sensitive && !answ.machine_generated) {
+    if ((answ.time_sensitive || answ.action_required) && answ.generated_by !== "machine") {
       t.markImportant();
     }
     last_processed_timestamp = t.getLastMessageDate().getTime();
