@@ -28,13 +28,14 @@ function createTask(title, email_id, email_title, dueDate = null, taskListId = '
     const task = {
       title: title,
       status: 'needsAction',
-      links: [
-        {
-          description: email_title,
-          link: 'https://mail.google.com/mail/#all/' + email_id,
-          type: 'email'
-        }
-      ]
+      // links: [
+      //   {
+      //     description: email_title,
+      //     link: 'https://mail.google.com/mail/#all/' + email_id,
+      //     type: 'email'
+      //   }
+      // ],
+      notes: 'https://mail.google.com/mail/#all/' + email_id
     };
 
     // Add due date only if it's provided
