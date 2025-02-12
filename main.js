@@ -22,6 +22,10 @@ function main() {
   const schema = {
     type: "object",
     properties: {
+      summary: {
+        type: "string",
+        description: "Use Simplified Chinese to create a concise list summarizing the email.",
+      },
       category: {
         type: "string",
         description: "Categorize the email into one of these categories:\n" +
@@ -53,7 +57,7 @@ function main() {
           properties: {
             action: {
               type: "string",
-              description: "Describe the action required in a concise manner."
+              description: "Use Simplified Chinese to describe the action required in a concise manner."
             },
             due_date: {
               type: "string",
@@ -66,7 +70,7 @@ function main() {
         },
       },
     },
-    required: ["category", "generated_by", "time_sensitive", "action_required"],
+    required: ["summary", "category", "generated_by", "time_sensitive", "action_required"],
     additionalProperties: false
   };
   const props = PropertiesService.getScriptProperties();
@@ -147,8 +151,8 @@ function main() {
     if (answ.action_required.length > 0) {
       t.addLabel(GmailApp.getUserLabelByName("TODO"));
       answ.action_required.forEach((act) => {
-        if (act.action) {
-          createTask(act.action, last_message.getId(), last_message.getSubject(), act.due_date);
+        if (act.action && act.action.trim() !== "null" && act.action.trim() !== "无") {
+          createTask(act.action, last_message.getId(), last_message.getSubject(), answ.summary, act.due_date);
         }
       });
     } else {
