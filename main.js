@@ -44,8 +44,26 @@ function main() {
         description: "The email is urgent and requires immediate notification or response, ideally within one hour.",
       },
       action_required: {
-        type: "boolean",
-        description: "The email requires further action from me.",
+        type: "array",
+        // minItems: 0,
+        // maxItems: 3,
+        description: "The email may require further action(s) from me.",
+        items: {
+          type: "object",
+          properties: {
+            action: {
+              type: "string",
+              description: "Describe the action required in a concise manner."
+            },
+            due_date: {
+              type: "string",
+              // format: "date",
+              description: "If applicable, set the due date of the action in the format of `YYYY-MM-DD`. If not applicable, set it to `null`."
+            },
+          },
+          required: ["action", "due_date"],
+          additionalProperties: false,
+        },
       },
     },
     required: ["category", "generated_by", "time_sensitive", "action_required"],
@@ -75,7 +93,7 @@ function main() {
       .getMessages()
       .find((m) => m.getDate().getTime() == last_message_timestamp);
     const content = getUserPrompt(last_message);
-    let answ = callOpenAIStructuredOutputs(content, schema);
+    let answ = callOpenRouterStructuredOutputs(content, schema);
     // console.log(answ);
     console.log(`${last_message.getSubject()}\n${JSON.stringify(answ)}`);
     // Proceed with different actions by categories
@@ -126,7 +144,7 @@ function main() {
         t.removeLabel(GmailApp.getUserLabelByName("Human"));
         t.removeLabel(GmailApp.getUserLabelByName("AI"));
     }
-    if (answ.action_required) {
+    if (answ.action_required.length > 0) {
       t.addLabel(GmailApp.getUserLabelByName("TODO"));
     } else {
       t.removeLabel(GmailApp.getUserLabelByName("TODO"));
@@ -134,10 +152,10 @@ function main() {
     if (["Notices", "Notices/Status", "Receipts", "Feeds"].includes(answ.category) && !answ.action_required) {
       t.moveToArchive();
     }
-    if (answ.time_sensitive || answ.action_required || !answ.generated_by === "machine") {
+    if (answ.time_sensitive || answ.action_required.length || !answ.generated_by === "machine") {
       t.moveToInbox();
     }
-    if ((answ.time_sensitive || answ.action_required) && answ.generated_by !== "machine") {
+    if ((answ.time_sensitive || answ.action_required.length) && answ.generated_by !== "machine") {
       t.markImportant();
     }
     last_processed_timestamp = t.getLastMessageDate().getTime();
