@@ -146,6 +146,11 @@ function main() {
     }
     if (answ.action_required.length > 0) {
       t.addLabel(GmailApp.getUserLabelByName("TODO"));
+      answ.action_required.forEach((act) => {
+        if (act.action) {
+          createTask(act.action, last_message.getId(), last_message.getSubject(), act.due_date);
+        }
+      });
     } else {
       t.removeLabel(GmailApp.getUserLabelByName("TODO"));
     }

@@ -82,7 +82,9 @@ function callOpenRouterStructuredOutputs(userText, schemaObj) {
     contentType: "application/json",
     payload: JSON.stringify(payload),
     headers: {
-      Authorization: "Bearer " + apiKey
+      Authorization: "Bearer " + apiKey,
+      "HTTP-Referer": "https://github.com/xdanger/gmail-assistant",
+      "X-Title": "Gmail Assistant"
     },
     muteHttpExceptions: true
   };
