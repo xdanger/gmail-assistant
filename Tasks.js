@@ -17,7 +17,11 @@
  */
 
 // Function to add a task with a due date to Google Tasks
-function createTask(title, email_id, email_title, dueDate = null, taskListId = 'cFotb3UwbUNMWHhhcmVfZw') {
+function createTask(title, email_id, email_title, dueDate = null) {
+
+  const properties = PropertiesService.getScriptProperties();
+  const taskListId = properties.getProperty('TASK_LIST_ID');
+
   try {
     // Get the specified task list, or use default if not provided
     const taskList = Tasks.Tasklists.list()
