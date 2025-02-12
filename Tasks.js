@@ -1,18 +1,24 @@
 /** An example of a Tasks.task object:
 {
+  // output-only properties, not inputable
+  id: 'X0lTNEhqNk9oWC1SV1VuRw'
   webViewLink: 'https://tasks.google.com/task/_IS4Hj6OhX-RWUnG?sa=6',
   updated: '2025-02-09T12:55:21.000Z',
   etag: '"LTM1NjAzMzExOQ"',
   selfLink: 'https://www.googleapis.com/tasks/v1/lists/cFotb3UwbUNMWHhhcmVfZw/tasks/X0lTNEhqNk9oWC1SV1VuRw',
-  status: 'needsAction',
   kind: 'tasks#task',
-  position: '00000000000000000000',
   links:
-  [ { description: 'Next steps for Zhencheng\'s application to Wolfeboro Camp School',
-      link: 'https://mail.google.com/mail/#all/194932fff36f7e6c',
+  [ { description: '<email_subject>',
+      link: 'https://mail.google.com/mail/#all/<email_message_id>',
       type: 'email' } ],
-  title: 'Next steps for Zhencheng\'s application to Wolfeboro Camp School',
-  id: 'X0lTNEhqNk9oWC1SV1VuRw'
+  title: '<action_description>',
+  // inputable properties
+  status: 'needsAction',
+  position: '00000000000000000000',
+  parent: 'X0lTNEhqNk9oWC1SV1VuRw',
+  completed: '2025-02-09T12:55:21.000Z',
+  due: '2025-02-12T00:00:00.000Z',
+  notes: 'https://mail.google.com/mail/#all/<email_message_id>',
  }
  */
 
