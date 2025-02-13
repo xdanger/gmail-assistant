@@ -67,7 +67,7 @@ function callOpenRouterStructuredOutputs(userText, schemaObj) {
       type: "json_schema",
       json_schema: {
         name: "email_classification",
-        strict: true,
+        strict: false,
         schema: schemaObj
       }
     },
