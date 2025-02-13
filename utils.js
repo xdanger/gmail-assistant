@@ -1,6 +1,7 @@
+
 function setLastProcessedMessage() {
   const q =
-    "Subject: Sectigo Order #496098213 SSL Expiry Notice - 10% Discount Inside";
+    "JPM US Tech Fund on AI & Deepseek";
   const threads = GmailApp.search(q);
   if (threads.length == 0) {
     return false;
@@ -18,33 +19,17 @@ function listAllYourLabels() {
   }
 }
 
-/* OpenAI/Claude Function Call */
-const tools = [{
-  "type": "function",
-  "function": {
-    "name": "getLabels",
-    "description": "Classificate/Identify email by muti-dimension attributes",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "category": { "type": "string" },
-        "timesensitive": { "type": "boolean" },
-        "handwritten": { "type": "boolean" }
-      }
-    }
+function getAMessage() {
+  const q =
+    "Sectigo Public Root CA Migration Timeline for S/MIME and TLS Certificates";
+  const threads = GmailApp.search(q);
+  if (threads.length == 0) {
+    return false;
   }
+  const first_matched_thread = threads.shift();
+  threads.forEach((t) => {
+    const last_message_timestamp = t.getLastMessageDate().getTime();
+    const last_message = t
+    console.log(t.getId())
+  })
 }
-]
-
-/*
-const props = PropertiesService.getScriptProperties();
-const geminiApiKey = props.getProperty("GEMINI_API_KEY");
-const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro-latest:generateContent?key=${geminiApiKey}`;
-const model = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash-thinking-exp",
-  generationConfig: {
-    responseMimeType: "application/json",
-    responseSchema: schema,
-  },
-});
-*/
