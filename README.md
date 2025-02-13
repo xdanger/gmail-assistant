@@ -43,7 +43,6 @@ An intelligent Gmail management system built with Google Apps Script that automa
    ```javascript
    TASK_LIST_ID          // Your Google Tasks list ID
    OPENROUTER_API_KEY    // Your OpenRouter API key
-   LastProcessedMessage_TS // Timestamp of last processed message
    ```
 
 3. **Create Gmail Labels**:
@@ -60,10 +59,10 @@ An intelligent Gmail management system built with Google Apps Script that automa
 
 ### OpenRouter Integration
 
-The system uses OpenRouter API to access various AI models for email processing. Set up your API key:
+The system uses OpenRouter API to access various AI models for email processing. Set up your API key in the script properties:
 
-```javascript
-setOpenRouterAPIKey("YOUR_OPENROUTER_API_KEY");
+```txt
+OPENROUTER_API_KEY = <YOUR_OPENROUTER_API_KEY>
 ```
 
 ### Email Processing Rules
