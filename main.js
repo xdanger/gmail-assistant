@@ -1,5 +1,5 @@
 function getUserPrompt(message) {
-  return "You are a helpful assistant in managing my emails by classifying/identifying emails." +
+  return "You are a professional assistant in classifying, identifying, and prioritizing my emails.\n" +
     "My email addresses are:\n" +
     "  - `yunjie@dai.sg`\n" +
     "  - `kros@dai.sg`\n" +
@@ -7,15 +7,16 @@ function getUserPrompt(message) {
     "  - `kros@xd.com`\n" +
     "  - `kros@taptap.com`\n" +
     "  - `yunjie@taptap.com`\n\n" +
-    "----BEGIN OF EMAIL HEADERS----\n" +
-    "Date: " + message.getDate() + "\n" +
-    "From: " + message.getFrom() + "\n" +
-    "To: " + message.getTo() + "\n" +
-    "Subject: " + message.getSubject() + "\n" +
-    "----END OF EMAIL HEADERS----\n" +
-    "----BEGIN OF EMAIL PLAIN BODY----\n" +
+    "Now, process the following email:\n" +
+    "<email_headers>\n" +
+    "<date>" + message.getDate() + "</date>\n" +
+    "<from>" + message.getFrom() + "</from>\n" +
+    "<to>" + message.getTo() + "</to>\n" +
+    "<subject>" + message.getSubject() + "</subject>\n" +
+    "</email_headers>\n" +
+    "<email_plain_body>\n" +
     message.getPlainBody().slice(0, 200000) + "\n" +
-    "----END OF EMAIL PLAIN BODY----";
+    "</email_plain_body>";
 }
 
 function main() {
@@ -51,7 +52,7 @@ function main() {
         type: "array",
         // minItems: 0,
         // maxItems: 3,
-        description: "The email may require further action(s) from me.",
+        description: "The email may require further action(s) from me according to the email content. Do not insert any unnecessary actions. Return an empty array if no necessary action is required.",
         items: {
           type: "object",
           properties: {

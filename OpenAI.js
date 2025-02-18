@@ -27,7 +27,6 @@ function getOpenAIKey() {
   // Return the API key if it is set
   return token;
 }
-
 /**
  * Custom Google Sheets function to interact with OpenAI's Assistant API.
  * It creates a thread, sends the user's message, and retrieves the response in one go.
