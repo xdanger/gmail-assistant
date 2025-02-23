@@ -52,7 +52,7 @@ function main() {
         type: "array",
         // minItems: 0,
         // maxItems: 3,
-        description: "The email may require further action(s) from me according to the email content. Do not insert any unnecessary actions. Return an empty array if no necessary action is required.",
+        description: "According to the email content, the email may require further important and essential action(s) other than finishing reading the email from me. Return an empty array if no necessary action is required, DO NOT insert any unnecessary items.",
         items: {
           type: "object",
           properties: {
