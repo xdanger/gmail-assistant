@@ -55,6 +55,7 @@ function callOpenRouterStructuredOutputs(userText, schemaObj) {
 
   const payload = {
     model: [ // Adjust model as needed
+      "anthropic/claude-3.7-sonnet:thinking",
       "anthropic/claude-3-5-sonnet:beta",
       "openai/o3-mini",
       "google/gemini-2.0-pro-exp-02-05",
